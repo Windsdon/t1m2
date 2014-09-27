@@ -36,10 +36,15 @@ int main(int argc, char** argv) {
 	int i;
 	double raizes[2], r1, r2, f1, f2, x3;
 	double pontos[][2] = {
-		0, f(0),
-		1, f(1),
-		2, f(2)
+		0.1, f(0.1),
+		0.2, f(0.2),
+		0.3, f(0.3)
 	};
+
+	printf("pontos iniciais: (%g,%g), (%g,%g), (%g,%g)\n", 
+			pontos[0][0], pontos[0][1],
+			pontos[1][0], pontos[1][1],
+			pontos[2][0], pontos[2][1]);
 
 	i = 20;
 
@@ -74,7 +79,8 @@ int main(int argc, char** argv) {
 		printf("novos pontos: (%g,%g), (%g,%g), (%g,%g)\n", 
 			pontos[0][0], pontos[0][1],
 			pontos[1][0], pontos[1][1],
-			pontos[2][0], pontos[2][1]);
+			pontos[2][0], pontos[2][1]
+		);
 
 		i--;
 	}while(i);
@@ -134,7 +140,7 @@ void lagrange(polinomio* p, double pontos[][2]) {
 
 		p->a += ls[i].a * pontos[i][1];
 		p->b += ls[i].b * pontos[i][1];
-		p->b += ls[i].c * pontos[i][1];
+		p->c += ls[i].c * pontos[i][1];
 	}
 
 
