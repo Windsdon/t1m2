@@ -36,9 +36,9 @@ int main(int argc, char** argv) {
 	int i;
 	double raizes[2], r1, r2, f1, f2, x3;
 	double pontos[][2] = {
-		0.1, f(0.1),
-		0.2, f(0.2),
-		0.3, f(0.3)
+		3.1, f(10.1),
+		3.2, f(10.2),
+		3.3, f(10.3)
 	};
 
 	printf("pontos iniciais: (%g,%g), (%g,%g), (%g,%g)\n", 
