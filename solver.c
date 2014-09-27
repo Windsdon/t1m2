@@ -26,13 +26,62 @@ void bhaskara(polinomio* p, double* raizes);
 */
 void lagrange(polinomio* p, double pontos[][2]);
 
+/*
+*   A função f(x)
+*/
+double f(double x);
+
 int main(int argc, char** argv) {
-	polinomio hue;
-	double pontos[][2] = {1, 1, -1, 1, 0, 0};
+	polinomio p2;
+	int i;
+	double raizes[2], r1, r2, f1, f2, x3;
+	double pontos[][2] = {
+		0, f(0),
+		1, f(1),
+		2, f(2)
+	};
 
-	lagrange(&hue, pontos);
+	i = 20;
 
-	printf("polinomio: %g %g %g\n", hue.a, hue.b, hue.c);
+	do {
+		lagrange(&p2, pontos);
+		bhaskara(&p2, raizes);
+
+		r1 = raizes[0];
+		r2 = raizes[1];
+		f1 = f(r1);
+		f2 = f(r2);
+
+		printf("polinomio: %g %g %g\n", p2.a, p2.b, p2.c);
+		printf("raizes: %g %g\n", r1, r2);
+		printf("valor de f: %g %g\n", f1, f2);
+
+		if(abs(f1) < abs(f2)){
+			x3 = r1;
+		}else{
+			x3 = r2;
+		}
+
+		pontos[0][0] = pontos[1][0];
+		pontos[0][1] = pontos[1][1];
+
+		pontos[1][0] = pontos[2][0];
+		pontos[1][1] = pontos[2][1];
+
+		pontos[2][0] = x3;
+		pontos[2][1] = f(x3);
+
+		printf("novos pontos: (%g,%g), (%g,%g), (%g,%g)\n", 
+			pontos[0][0], pontos[0][1],
+			pontos[1][0], pontos[1][1],
+			pontos[2][0], pontos[2][1]);
+
+		i--;
+	}while(i);
+}
+
+double f(double x){
+	return (7 - x)*(-pow(x,3) + 9 * pow(x, 2) - 18 * x + 6) -27*(pow(x, 2) - 4*x + 2);
 }
 
 void bhaskara(polinomio* p, double* raizes) {
