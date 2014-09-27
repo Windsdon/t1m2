@@ -83,10 +83,11 @@ int main(int argc, char** argv) {
 		);
 
 		i--;
-	}while(i);
+	}while(pontos[2][1] > 1e-10);
 }
 
 double f(double x){
+	return (x - 1) * (x - 2) * (x - 3) * (x - 4);
 	return (7 - x)*(-pow(x,3) + 9 * pow(x, 2) - 18 * x + 6) -27*(pow(x, 2) - 4*x + 2);
 }
 
