@@ -31,20 +31,72 @@ void lagrange(polinomio* p, double pontos[][2]);
 */
 double f(double x);
 
-int main(int argc, char** argv) {
-	polinomio p2;
-	int i;
-	double raizes[2], r1, r2, f1, f2, x3;
-	double pontos[][2] = {
-		3.1, f(10.1),
-		3.2, f(10.2),
-		3.3, f(10.3)
-	};
+/*
+* Aplica o método para a função fn, com os três pontos iniciais
+*/
+double solve(double (*fn)(double), double inicial[3]);
 
-	printf("pontos iniciais: (%g,%g), (%g,%g), (%g,%g)\n", 
-			pontos[0][0], pontos[0][1],
-			pontos[1][0], pontos[1][1],
-			pontos[2][0], pontos[2][1]);
+void printPontos(double pontos[][2]);
+
+int main(int argc, char** argv) {
+	double pontos[3] = {-2, -1, -0};
+	double raizes[4] = {0, 0, 0, 0};
+	int numRaizes= 0;
+	double r;
+	char raizEncontrada;
+	int i, j;
+
+	for(i = 0; i < 12; i++){
+		r = solve(f, pontos);
+
+		raizEncontrada = 0;
+
+		for(j = 0; j < numRaizes; j++){
+			if(abs(raizes[j] - r) < 1e-10){
+				raizEncontrada = 1;
+				break;
+			}
+		}
+
+		if(!raizEncontrada){
+			raizes[j] = r;
+			numRaizes++;
+		}
+
+		for(j = 0; j < 3; j++){
+			pontos[j] += 1;
+		}
+	}
+
+	printf("RAIZES:\n%.11f\n%.11f\n%.11f\n%.11f\n", raizes[0], raizes[1], raizes[2], raizes[3]);
+
+	return 0;	
+}
+
+double f(double x){
+	return (7 - x)*(-pow(x,3) + 9 * pow(x, 2) - 18 * x + 6) -27*(pow(x, 2) - 4*x + 2);
+}
+
+double solve(double (*fn)(double), double inicial[3]){
+	polinomio p2;
+	int i, iter;
+	double raizes[2], r1, r2, f1, f2, f3, x3, e;
+
+	char message[100]; //para salvar no log
+
+	double pontos[3][2];
+
+	for(i = 0; i < 3; i++){
+		pontos[i][0] = inicial[i];
+		pontos[i][1] = fn(inicial[i]);
+	}
+
+	printPontos(pontos);
+
+	FILE *file;
+	file = fopen("out.txt", "w");
+
+	iter = 0;
 
 	do {
 		lagrange(&p2, pontos);
@@ -52,10 +104,10 @@ int main(int argc, char** argv) {
 
 		r1 = raizes[0];
 		r2 = raizes[1];
-		f1 = f(r1);
-		f2 = f(r2);
+		f1 = fn(r1);
+		f2 = fn(r2);
 
-		printf("polinomio: %g %g %g\n", p2.a, p2.b, p2.c);
+		printf("\npolinomio: %g %g %g\n", p2.a, p2.b, p2.c);
 		printf("raizes: %g %g\n", r1, r2);
 		printf("valor de f: %g %g\n", f1, f2);
 
@@ -65,28 +117,35 @@ int main(int argc, char** argv) {
 			x3 = r2;
 		}
 
-		pontos[0][0] = pontos[1][0];
-		pontos[0][1] = pontos[1][1];
+		f3 = fn(x3);
 
-		pontos[1][0] = pontos[2][0];
-		pontos[1][1] = pontos[2][1];
+		for(i = 0; i < 2; i++){
+			pontos[i][0] = pontos[i+1][0];
+			pontos[i][1] = pontos[i+1][1];
+		}
 
-		pontos[2][0] = x3;
-		pontos[2][1] = f(x3);
+		pontos[i][0] = x3;
+		pontos[i][1] = f3;
 
-		printf("novos pontos: (%g,%g), (%g,%g), (%g,%g)\n", 
-			pontos[0][0], pontos[0][1],
-			pontos[1][0], pontos[1][1],
-			pontos[2][0], pontos[2][1]
-		);
+		printPontos(pontos);
 
-		printf("erro: %.11f\n", sqrt((pontos[2][1])*(pontos[2][1])));
+		e = fabs(pontos[2][1]);
 
-	}while(sqrt((pontos[2][1])*(pontos[2][1])) > 1e-10);
-}
+		printf("erro: %g\n", e);
 
-double f(double x){
-	return (7 - x)*(-pow(x,3) + 9 * pow(x, 2) - 18 * x + 6) -27*(pow(x, 2) - 4*x + 2);
+		sprintf(message, "%d\t%g\n", iter, e);
+
+		fputs(message, file);
+
+		iter++;
+
+	}while(e > 1e-10);
+
+	printf("\n\n**** CONVERGIU EM %d ITERACOES\nPONTO: %.11f\n\n", iter, x3);
+
+	fclose(file);
+
+	return x3;
 }
 
 void bhaskara(polinomio* p, double* raizes) {
@@ -94,8 +153,7 @@ void bhaskara(polinomio* p, double* raizes) {
 	delta = pow(p->b, 2) - 4 * p->a * p->c;
 
 	if(delta < 0){
-		r1 = -(p->b)/(2 * (p->a));
-		r2 = r1;
+		r2 = r1 = -(p->b)/(2 * (p->a));
 	}else{
 		double raizDelta = sqrt(delta);
 
@@ -109,7 +167,9 @@ void bhaskara(polinomio* p, double* raizes) {
 
 void lagrange(polinomio* p, double pontos[][2]) {
 	int i, j;
-	polinomio* ls = malloc(3 * sizeof(polinomio));
+	//polinomio* ls = malloc(3 * sizeof(polinomio));
+
+	double b, c;
 
 	p->a = 0;
 	p->b = 0;
@@ -119,9 +179,8 @@ void lagrange(polinomio* p, double pontos[][2]) {
 		//calcular os polinomios de lagrange
 		double denominador = 1;
 
-		ls[i].a = 1;
-		ls[i].b = 0;
-		ls[i].c = 1;
+		b = 0;
+		c = 1;
 
 		for(j = 0; j < 3; j++){
 			if(i == j){
@@ -129,18 +188,26 @@ void lagrange(polinomio* p, double pontos[][2]) {
 			}
 
 			denominador *= (pontos[i][0] - pontos[j][0]);
-			ls[i].b -= pontos[j][0];
-			ls[i].c *= pontos[j][0];
+			b -= pontos[j][0];
+			c *= pontos[j][0];
 		}
 
-		ls[i].a /= denominador;
-		ls[i].b /= denominador;
-		ls[i].c /= denominador;
-
-		p->a += ls[i].a * pontos[i][1];
-		p->b += ls[i].b * pontos[i][1];
-		p->c += ls[i].c * pontos[i][1];
+		p->a += pontos[i][1] / denominador;
+		p->b += b * pontos[i][1] / denominador;
+		p->c += c * pontos[i][1] / denominador;
 	}
 
 
+}
+
+void printPontos(double pontos[][2]){
+	int i;
+
+	printf("pontos: ");
+
+	for(i = 0; i < 3; i++){
+		printf("(%g, %g) ", pontos[i][0], pontos[i][1]);
+	}
+
+	printf("\n");
 }
