@@ -38,13 +38,18 @@ double solve(double (*fn)(double), double inicial[3]);
 
 void printPontos(double pontos[][2]);
 
+FILE *file;
+
 int main(int argc, char** argv) {
-	double pontos[3] = {-2, -1, -0};
+	double pontos[3] = {-2, -1, 0};
 	double raizes[4] = {0, 0, 0, 0};
 	int numRaizes= 0;
 	double r;
 	char raizEncontrada;
 	int i, j;
+	char message[100];
+
+	file = fopen("out.txt", "w");
 
 	for(i = 0; i < 12; i++){
 		r = solve(f, pontos);
@@ -70,6 +75,11 @@ int main(int argc, char** argv) {
 
 	printf("RAIZES:\n%.11f\n%.11f\n%.11f\n%.11f\n", raizes[0], raizes[1], raizes[2], raizes[3]);
 
+	sprintf(message, "########################\nRAIZES\n%.10f\n%.10f\n%.10f\n%.10f\n\n", raizes[0], raizes[1], raizes[2], raizes[3]);
+	fputs(message, file);
+
+	fclose(file);
+
 	return 0;	
 }
 
@@ -93,10 +103,13 @@ double solve(double (*fn)(double), double inicial[3]){
 
 	printPontos(pontos);
 
-	FILE *file;
-	file = fopen("out.txt", "w");
-
 	iter = 0;
+
+	fputs("************************\n", file);
+
+	sprintf(message, "Pontos iniciais: %g %g %g\n", inicial[0], inicial[1], inicial[2]);
+	fputs(message, file);
+	fputs("iter\terro\t\tx3\n", file);
 
 	do {
 		lagrange(&p2, pontos);
@@ -133,7 +146,7 @@ double solve(double (*fn)(double), double inicial[3]){
 
 		printf("erro: %g\n", e);
 
-		sprintf(message, "%d\t%g\n", iter, e);
+		sprintf(message, "%d\t%-15g\t%g\n", iter, e, x3);
 
 		fputs(message, file);
 
@@ -143,7 +156,9 @@ double solve(double (*fn)(double), double inicial[3]){
 
 	printf("\n\n**** CONVERGIU EM %d ITERACOES\nPONTO: %.11f\n\n", iter, x3);
 
-	fclose(file);
+	sprintf(message, "CONVERGIU\nPonto: %.11f\nErro: %g\nIteracoes: %u\n\n", x3, e, iter);
+	fputs(message, file);
+
 
 	return x3;
 }
