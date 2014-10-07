@@ -1,1 +1,1 @@
-gcc -Wall -O3 solver.c && a
+gcc -Wall -O3 solver.c && a && pause

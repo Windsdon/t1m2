@@ -23,8 +23,9 @@ void bhaskara(polinomio* p, double* raizes);
 
 /*
 *   Cria o polinômio de lagrange para os pontos  
+*   Retorna 1 em caso de falha
 */
-void lagrange(polinomio* p, double pontos[][2]);
+int lagrange(polinomio* p, double pontos[][2]);
 
 /*
 *   A função f(x)
@@ -32,13 +33,14 @@ void lagrange(polinomio* p, double pontos[][2]);
 double f(double x);
 
 /*
-* Aplica o método para a função fn, com os três pontos iniciais
+*   Aplica o método para a função fn, com os três pontos iniciais
+*   Retorna 1 em caso de falha
 */
 double solve(double (*fn)(double), double inicial[3]);
 
 void printPontos(double pontos[][2]);
 
-FILE *file;
+FILE *file; // para criar arquivo de saída
 
 int main(int argc, char** argv) {
 	double pontos[3] = {-2, -1, 0};
@@ -50,6 +52,12 @@ int main(int argc, char** argv) {
 	char message[100];
 
 	file = fopen("out.txt", "w");
+
+
+	/****/
+	double pontosHue[] = {11.000001, 11.000002, 11.000003};
+	solve(f, pontosHue);
+	/****/
 
 	for(i = 0; i < 12; i++){
 		r = solve(f, pontos);
@@ -107,12 +115,17 @@ double solve(double (*fn)(double), double inicial[3]){
 
 	fputs("************************\n", file);
 
-	sprintf(message, "Pontos iniciais: %g %g %g\n", inicial[0], inicial[1], inicial[2]);
+	sprintf(message, "Pontos iniciais: %f %f %f\n", inicial[0], inicial[1], inicial[2]);
 	fputs(message, file);
 	fputs("iter\terro\t\tx3\n", file);
 
 	do {
-		lagrange(&p2, pontos);
+		if(lagrange(&p2, pontos)){
+			sprintf(message, "Falha ao criar o polinomio de lagrange! \n**Abortado**\n");
+			fputs(message, file);
+			return NAN;
+		}
+
 		bhaskara(&p2, raizes);
 
 		r1 = raizes[0];
@@ -180,9 +193,8 @@ void bhaskara(polinomio* p, double* raizes) {
 	raizes[1] = r2;
 }
 
-void lagrange(polinomio* p, double pontos[][2]) {
+int lagrange(polinomio* p, double pontos[][2]) {
 	int i, j;
-	//polinomio* ls = malloc(3 * sizeof(polinomio));
 
 	double b, c;
 
@@ -207,12 +219,17 @@ void lagrange(polinomio* p, double pontos[][2]) {
 			c *= pontos[j][0];
 		}
 
+		if(!denominador){
+			//Divisão por zero
+			return 1;
+		}
+
 		p->a += pontos[i][1] / denominador;
 		p->b += b * pontos[i][1] / denominador;
 		p->c += c * pontos[i][1] / denominador;
 	}
 
-
+	return 0;
 }
 
 void printPontos(double pontos[][2]){
