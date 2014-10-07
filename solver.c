@@ -1,6 +1,6 @@
 /**
 *   1º Trabalho de Métodos Numéricos para Engenharia II
-*   Professor Murilo F. Tomé
+*   Professor: Murilo F. Tomé
 */
 #include <stdio.h>
 #include <math.h>
@@ -50,12 +50,6 @@ int main(int argc, char** argv) {
 	char message[100]; // para salvar no arquivo
 
 	file = fopen("out.txt", "w");
-
-
-	/****/
-	double pontosHue[] = {11.000001, 11.000002, 11.000003};
-	solve(f, pontosHue);
-	/****/
 
 	for(i = 0; i < 12; i++){
 		r = solve(f, pontos); // econtrar a raiz
@@ -159,7 +153,7 @@ double solve(double (*fn)(double), double inicial[3]){
 
 	}while(e > 1e-10);
 
-	printf("\n**** CONVERGIU EM %d ITERACOES\nPONTO: %.11f\n", iter, x3);
+	printf("\nCONVERGIU EM %d ITERACOES\nPONTO: %.11f\n", iter, x3);
 
 	sprintf(message, "CONVERGIU\nPonto: %.11f\nErro: %g\nIteracoes: %u\n\n", x3, e, iter);
 	fputs(message, file);
